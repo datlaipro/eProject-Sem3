@@ -1,0 +1,78 @@
+﻿using Microsoft.EntityFrameworkCore;
+using VehicleInsurance.Domain.Users;
+using VehicleInsurance.Domain.Auth;
+using VehicleInsurance.Domain.EmailVerification; // <-- thêm dòng này
+
+namespace VehicleInsurance.Infrastructure;
+
+public class AppDbContext : DbContext
+{
+    public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
+
+    public AppDbContext(DbContextOptions<AppDbContext> opt) : base(opt) { }
+
+    public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+
+    protected override void OnModelCreating(ModelBuilder b)
+    {
+        // USERS -> bảng "users" với cột snake_case
+        b.Entity<User>(e =>
+        {
+            e.ToTable("users");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Id)           .HasColumnName("id");
+            e.Property(x => x.Username)     .HasColumnName("username").IsRequired().HasMaxLength(100);
+            e.Property(x => x.Email)        .HasColumnName("email").IsRequired().HasMaxLength(255);
+            e.Property(x => x.PasswordHash) .HasColumnName("password_hash").IsRequired().HasMaxLength(255);
+            e.Property(x => x.Role)         .HasColumnName("role").IsRequired().HasMaxLength(32);
+            e.Property(x => x.Active)       .HasColumnName("active");
+
+            e.HasIndex(x => x.Username).IsUnique();
+            e.HasIndex(x => x.Email).IsUnique();
+        });
+
+        // REFRESH TOKENS -> bảng "refresh_tokens" với cột snake_case
+        b.Entity<RefreshToken>(e =>
+        {
+            e.ToTable("refresh_tokens");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Id)                  .HasColumnName("id").ValueGeneratedOnAdd();
+            e.Property(x => x.UserId)              .HasColumnName("user_id").IsRequired();
+            e.Property(x => x.TokenHash)           .HasColumnName("token_hash").IsRequired().HasMaxLength(64);
+            e.Property(x => x.TokenFamily)         .HasColumnName("token_family").HasMaxLength(36);
+            e.Property(x => x.IssuedAt)            .HasColumnName("issued_at");
+            e.Property(x => x.ExpiresAt)           .HasColumnName("expires_at");
+            e.Property(x => x.Revoked)             .HasColumnName("revoked");
+            e.Property(x => x.RevokedAt)           .HasColumnName("revoked_at");
+            e.Property(x => x.ReplacedByTokenHash) .HasColumnName("replaced_by_token_hash").HasMaxLength(64);
+            e.Property(x => x.IpAddress)           .HasColumnName("ip_address").HasMaxLength(45);
+            e.Property(x => x.UserAgent)           .HasColumnName("user_agent").HasMaxLength(255);
+            e.Property(x => x.CreatedAt)           .HasColumnName("created_at");
+            e.Property(x => x.UpdatedAt)           .HasColumnName("updated_at");
+
+            e.HasIndex(x => new { x.UserId, x.TokenHash }).IsUnique();
+            e.HasIndex(x => x.ExpiresAt);
+            e.HasIndex(x => x.Revoked);
+        });
+
+        // EMAIL VERIFICATION TOKENS -> bảng "email_verification_tokens" với cột snake_case
+        b.Entity<EmailVerificationToken>(e =>
+        {
+            e.ToTable("email_verification_tokens");
+            e.HasKey(x => x.Id);
+
+            e.Property(x => x.Id)           .HasColumnName("id").ValueGeneratedOnAdd();
+            e.Property(x => x.UserId)       .HasColumnName("user_id").IsRequired();
+            e.Property(x => x.Token)        .HasColumnName("token").IsRequired().HasMaxLength(255);
+            e.Property(x => x.ExpiresAtUtc) .HasColumnName("expires_at_utc").IsRequired();
+            e.Property(x => x.UsedAtUtc)    .HasColumnName("used_at_utc");
+            e.Property(x => x.CreatedAtUtc) .HasColumnName("created_at_utc").IsRequired();
+
+            e.HasIndex(x => x.Token).IsUnique();
+            e.HasIndex(x => new { x.UserId, x.UsedAtUtc });
+        });
+    }
+}

@@ -1,0 +1,11 @@
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\bin\Debug\net9.0\VehicleInsurance.Domain.deps.json
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\bin\Debug\net9.0\VehicleInsurance.Domain.dll
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\bin\Debug\net9.0\VehicleInsurance.Domain.pdb
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\VehicleInsurance.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\VehicleInsurance.Domain.AssemblyInfoInputs.cache
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\VehicleInsurance.Domain.AssemblyInfo.cs
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\VehicleInsurance.Domain.csproj.CoreCompileInputs.cache
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\VehicleInsurance.Domain.dll
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\refint\VehicleInsurance.Domain.dll
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\VehicleInsurance.Domain.pdb
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Domain\obj\Debug\net9.0\ref\VehicleInsurance.Domain.dll
