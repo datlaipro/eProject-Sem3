@@ -1,7 +1,8 @@
+
+
 using Microsoft.EntityFrameworkCore;
 using VehicleInsurance.Application.EmailVerification;
 using VehicleInsurance.Domain.EmailVerification;
-
 namespace VehicleInsurance.Infrastructure.EmailVerification;
 
 public class EmailVerificationTokenRepository : IEmailVerificationTokenRepository

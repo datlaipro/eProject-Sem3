@@ -1,7 +1,9 @@
+namespace VehicleInsurance.Domain.Users;
+
+
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace VehicleInsurance.Domain.Users;
 
 public interface IUserRepository
 {

@@ -33,78 +33,44 @@ public class ErrorHandlingMiddleware
         var status = HttpStatusCode.InternalServerError;
         var code = ErrorCodes.ServerError;
         string message = "Internal server error";
-        object? errors = null; // cho Validation
+        object? errors = null;
 
-        switch (ex)
-        {
-            // App-defined
-            case UnauthorizedAppException ua:
-                status = HttpStatusCode.Unauthorized;
-                code = ua.Code; message = ua.Message;
-                break;
+       switch (ex)
+{
+    case AppException ax:
+        status = ax.Status;
+        code = ax.Code;
+        message = ax.Message;
 
-            case ForbiddenAppException fb:
-                status = HttpStatusCode.Forbidden;
-                code = fb.Code; message = fb.Message;
-                break;
+        // Nếu là 429 và có Retry-After → set header
+        if (ax is RateLimitAppException rl && rl.RetryAfterSeconds.HasValue)
+            ctx.Response.Headers["Retry-After"] = rl.RetryAfterSeconds.Value.ToString();
 
-            case NotFoundException nf:
-                status = HttpStatusCode.NotFound;
-                code = nf.Code; message = nf.Message;
-                break;
+        break;
 
-            case ConflictException cf:
-                status = HttpStatusCode.Conflict;
-                code = cf.Code; message = cf.Message;
-                break;
+    case ValidationException ve:
+        status = HttpStatusCode.UnprocessableContent;
+        code = ErrorCodes.Validation;
+        message = "Validation failed";
+        errors = ve.Errors
+            .GroupBy(e => e.PropertyName)
+            .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+        break;
 
-            case BadRequestAppException br:
-                status = HttpStatusCode.BadRequest;
-                code = br.Code; message = br.Message;
-                break;
+    case UnauthorizedAccessException:
+        status = HttpStatusCode.Unauthorized;
+        code = ErrorCodes.Unauthorized;
+        message = "Unauthorized";
+        break;
 
-            // FluentValidation
-            case ValidationException ve:
-                status = HttpStatusCode.UnprocessableContent; // 422
-                code = ErrorCodes.Validation;
-                message = "Validation failed";
-                errors = ve.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
-                break;
-
-            // Thêm xử lý cho các exception tùy chỉnh
-            case InvalidLoginException ilex:
-                status = HttpStatusCode.Unauthorized;
-                code = ilex.Code;
-                message = ilex.Message;
-                break;
-
-            case InvalidRefreshTokenException irtex:
-                status = HttpStatusCode.Unauthorized;
-                code = irtex.Code;
-                message = irtex.Message;
-                break;
-
-            // Một số .NET/EF common dễ gặp
-            case UnauthorizedAccessException:
-                status = HttpStatusCode.Unauthorized;
-                code = ErrorCodes.Unauthorized; message = "Unauthorized";
-                break;
-
-            default:
-                // Giữ 500 + message ngắn gọn; có thể log ex ở đây
-                break;
-        }
+    default:
+        // giữ mặc định 500
+        break;
+}
 
         var payload = new
         {
-            error = new
-            {
-                code,
-                message,
-                errors,
-            },
+            error = new { code, message, errors },
             traceId
         };
 

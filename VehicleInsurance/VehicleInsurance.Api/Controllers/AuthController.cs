@@ -1,12 +1,14 @@
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using VehicleInsurance.Application.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace VehicleInsurance.Api.Controllers;
 
 [ApiController]
-[Route("auth")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
     private readonly AuthService _auth;
@@ -67,14 +69,28 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("logout")]
-    public IActionResult Logout()
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+public async Task<IActionResult> Logout(CancellationToken ct)
+{
+    // Lấy userId từ JWT đã được middleware xác thực
+    var uidStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    long.TryParse(uidStr, out var uid);
+
+    // Nếu bạn quản lý refresh-token theo “family”, nên thu hồi ở server:
+    var family = Request.Cookies["rt_family"];
+    if (!string.IsNullOrEmpty(family))
     {
-        // Xoá cookie phía client
-        ExpireCookie("access_token");
-        ExpireCookie("refresh_token");
-        ExpireCookie("rt_family");
-        return Ok(new { message = "Logged out" });
+        await _auth.RevokeRefreshFamilyAsync(uid, family, ct); // tự triển khai
     }
+
+    // Xoá cookie phía client
+    ExpireCookie("access_token");
+    ExpireCookie("refresh_token");
+    ExpireCookie("rt_family");
+
+    return Ok(new { message = "Logged out" });
+}
+
 
     private long? TryGetUserIdFromCookieJwt()
     {

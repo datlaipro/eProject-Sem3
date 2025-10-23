@@ -1,35 +1,43 @@
-﻿using System.Text;
-using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;                       // ApiBehaviorOptions
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Logging;                   // <-- thêm
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
-using VehicleInsurance.Application.Common.Email;
-using VehicleInsurance.Application.EmailVerification;
-using VehicleInsurance.Infrastructure.Common.Email;
-using VehicleInsurance.Infrastructure.EmailVerification;
 using FluentValidation;
 using FluentValidation.AspNetCore;
+
 using VehicleInsurance.Application.Auth;
+using VehicleInsurance.Application.Common.Email;
 using VehicleInsurance.Application.Common.Errors;
+using VehicleInsurance.Application.EmailVerification;
+
 using VehicleInsurance.Domain.Auth;
 using VehicleInsurance.Domain.Users;
+
 using VehicleInsurance.Infrastructure;
 using VehicleInsurance.Infrastructure.Auth;
 using VehicleInsurance.Infrastructure.Users;
+using VehicleInsurance.Infrastructure.EmailVerification;
+using VehicleInsurance.Infrastructure.Common.Email; // GmailSmtpEmailSender
+
 using VehicleInsurance.Api.Middleware;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+
+Console.WriteLine(">>> BOOT VEHICLE API :: 9f6ab7c6-2a7a-4c79-8b35-7f9b6db3f33b");
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Logging nên cấu hình TRƯỚC khi Build()
+// ---------- Logging ----------
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-// Controllers + FluentValidation (v11+)
+// ---------- MVC + FluentValidation ----------
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<VehicleInsurance.Api.Validators.RegisterRequestValidator>();
@@ -37,17 +45,30 @@ builder.Services.AddValidatorsFromAssemblyContaining<VehicleInsurance.Api.Valida
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DbContext MySQL 5.7
+// ---------- DbContext ----------
 var cs = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseMySql(cs, new MySqlServerVersion(new Version(5, 7, 0)),
         my => my.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
 
-// Repo + Service
+// ---------- DI (Repositories/Services) ----------
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 
-// JWT config
+// IEmailSender: dùng Gmail SMTP trong Development
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IEmailSender, GmailSmtpEmailSender>(); // đọc keys Email:* từ IConfiguration
+}
+else
+{
+    // TODO: thay bằng sender cho production (SendGrid/SES hoặc Gmail API OAuth2)
+    builder.Services.AddScoped<IEmailSender, GmailSmtpEmailSender>();
+}
+
+// ---------- JWT ----------
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
@@ -56,22 +77,28 @@ var accessMinutes = int.TryParse(builder.Configuration["Jwt:AccessTokenMinutes"]
 builder.Services.AddSingleton(new JwtTokenService(jwtIssuer, jwtAudience, jwtSecret, TimeSpan.FromMinutes(accessMinutes)));
 builder.Services.AddScoped<AuthService>();
 
-// IEmailSender (constructor 5 tham số)
-builder.Services.AddSingleton<IEmailSender>(sp =>
+// Chuẩn hoá lỗi model binding
+builder.Services.Configure<ApiBehaviorOptions>(opt =>
 {
-    var cfg = builder.Configuration;
-    return new SmtpEmailSender(
-        cfg["Smtp:Host"]!,
-        int.TryParse(cfg["Smtp:Port"], out var p) ? p : 587,
-        cfg["Smtp:User"]!,
-        cfg["Smtp:Pass"]!,
-        cfg["Smtp:From"]!
-    );
+    opt.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(kvp => kvp.Value?.Errors?.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+            );
+
+        var payload = new
+        {
+            error = new { code = ErrorCodes.BadRequest, message = "Request is invalid", errors },
+            traceId = context.HttpContext.TraceIdentifier
+        };
+        return new BadRequestObjectResult(payload);
+    };
 });
 
-builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
-
-// JwtBearer đọc token từ cookie "access_token"
+// AuthN/AuthZ
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -101,38 +128,18 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Chuẩn hóa lỗi 400 từ model binding
-builder.Services.Configure<ApiBehaviorOptions>(opt =>
-{
-    opt.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState
-            .Where(kvp => kvp.Value?.Errors?.Count > 0)
-            .ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
-            );
-
-        var payload = new
-        {
-            error = new
-            {
-                code = ErrorCodes.BadRequest,
-                message = "Request is invalid",
-                errors
-            },
-            traceId = context.HttpContext.TraceIdentifier
-        };
-
-        return new BadRequestObjectResult(payload);
-    };
-});
-
 builder.Services.AddAuthorization();
 
+// ====== Build app AFTER all Add...() ======
 var app = builder.Build();
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    using var scope = app.Services.CreateScope();
+    var sender = scope.ServiceProvider.GetRequiredService<IEmailSender>();
+    Console.WriteLine(">>> IEmailSender impl = " + sender.GetType().FullName);
+});
 
-// Bắt lỗi thật sớm
+// ---------- Middlewares ----------
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -141,9 +148,54 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // tắt tạm khi debug nếu cần
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// ===== DEBUG endpoints =====
+app.MapGet("/ping", () => Results.Text("pong"));
+app.MapGet("/__routes", (EndpointDataSource es) =>
+{
+    var routes = es.Endpoints
+        .OfType<RouteEndpoint>()
+        .Select(e => new
+        {
+            Pattern = e.RoutePattern.RawText,
+            Methods = string.Join(",", e.Metadata.OfType<HttpMethodMetadata>().SelectMany(m => m.HttpMethods))
+        });
+    return Results.Json(routes, new JsonSerializerOptions { WriteIndented = true });
+});
+// ===========================
+
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    try
+    {
+        var sp = app.Services;
+        var partManager = sp.GetRequiredService<Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartManager>();
+        var controllerFeature = new Microsoft.AspNetCore.Mvc.Controllers.ControllerFeature();
+        partManager.PopulateFeature(controllerFeature);
+
+        Console.WriteLine("=== MVC Controllers discovered ===");
+        foreach (var c in controllerFeature.Controllers)
+            Console.WriteLine($" - {c.FullName}");
+
+        var es = sp.GetRequiredService<EndpointDataSource>();
+        Console.WriteLine("=== Endpoints mapped ===");
+        foreach (var e in es.Endpoints.OfType<RouteEndpoint>())
+        {
+            var methods = string.Join(",", e.Metadata.OfType<HttpMethodMetadata>().SelectMany(m => m.HttpMethods));
+            Console.WriteLine($" - {methods} {e.RoutePattern.RawText}");
+        }
+        Console.WriteLine("==================================");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Failed to dump controllers/endpoints: " + ex);
+    }
+});
 
 app.Run();

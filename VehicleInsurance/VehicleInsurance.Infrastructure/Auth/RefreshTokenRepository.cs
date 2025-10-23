@@ -1,8 +1,10 @@
+
+
+
 using Microsoft.EntityFrameworkCore;
 using VehicleInsurance.Domain.Auth;
 
 namespace VehicleInsurance.Infrastructure.Auth;
-
 public class RefreshTokenRepository : IRefreshTokenRepository
 {
     private readonly AppDbContext _db;
@@ -27,10 +29,20 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task RevokeFamilyAsync(ulong userId, string tokenFamily, CancellationToken ct = default)
-    {
-        var list = await _db.RefreshTokens.Where(r => r.UserId == userId && r.TokenFamily == tokenFamily && !r.Revoked).ToListAsync(ct);
-        foreach (var t in list) { t.Revoked = true; t.RevokedAt = DateTime.UtcNow; }
-        await _db.SaveChangesAsync(ct);
-    }
+public async Task<int> RevokeFamilyAsync(ulong userId, string family, CancellationToken ct = default)
+{
+    var now = DateTime.UtcNow;
+
+    return await _db.RefreshTokens
+        .Where(r => r.UserId == userId
+                    && r.TokenFamily == family
+                    && !r.Revoked
+                    && r.ExpiresAt > now)
+        .ExecuteUpdateAsync(s => s
+            .SetProperty(r => r.Revoked, true)
+            .SetProperty(r => r.RevokedAt, now)     // nếu có cột
+            .SetProperty(r => r.UpdatedAt, now),     // nếu có cột
+             ct); // nếu có cột
+}
+
 }

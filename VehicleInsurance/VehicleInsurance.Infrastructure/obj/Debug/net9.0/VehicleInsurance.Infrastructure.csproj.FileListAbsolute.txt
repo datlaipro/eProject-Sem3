@@ -1,8 +1,3 @@
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.csproj.AssemblyReference.cache
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.AssemblyInfoInputs.cache
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.AssemblyInfo.cs
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.csproj.CoreCompileInputs.cache
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\bin\Debug\net9.0\VehicleInsurance.Infrastructure.deps.json
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\bin\Debug\net9.0\VehicleInsurance.Infrastructure.runtimeconfig.json
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\bin\Debug\net9.0\VehicleInsurance.Infrastructure.dll
@@ -11,6 +6,12 @@ C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\b
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\bin\Debug\net9.0\VehicleInsurance.Domain.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\bin\Debug\net9.0\VehicleInsurance.Domain.pdb
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\bin\Debug\net9.0\VehicleInsurance.Application.pdb
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.csproj.AssemblyReference.cache
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.AssemblyInfoInputs.cache
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.AssemblyInfo.cs
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.csproj.CoreCompileInputs.cache
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.sourcelink.json
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleI.CEA8A880.Up2Date
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\VehicleInsurance.Infrastructure.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Infrastructure\obj\Debug\net9.0\refint\VehicleInsurance.Infrastructure.dll

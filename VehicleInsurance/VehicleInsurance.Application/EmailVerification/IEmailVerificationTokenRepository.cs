@@ -1,5 +1,6 @@
-using VehicleInsurance.Domain.EmailVerification;
 
+
+using VehicleInsurance.Domain.EmailVerification;
 namespace VehicleInsurance.Application.EmailVerification;
 
 public interface IEmailVerificationTokenRepository

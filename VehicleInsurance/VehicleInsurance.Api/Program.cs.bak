@@ -1,47 +1,77 @@
-using System.Text;
+﻿using System.Text;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Mvc;                       // <- ApiBehaviorOptions
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using VehicleInsurance.Application.Common.Email;
 using VehicleInsurance.Application.EmailVerification;
-using VehicleInsurance.Infrastructure.Common.Email;
-using VehicleInsurance.Infrastructure.EmailVerification;
-using FluentValidation;                               // <- FV
-using FluentValidation.AspNetCore;                   // <- AddFluentValidationAutoValidation
-
 using VehicleInsurance.Application.Auth;
-using VehicleInsurance.Application.Common.Errors;     // <- ErrorCodes
+using VehicleInsurance.Application.Common.Errors;
 using VehicleInsurance.Domain.Auth;
 using VehicleInsurance.Domain.Users;
 using VehicleInsurance.Infrastructure;
+using VehicleInsurance.Infrastructure.Users;
+using VehicleInsurance.Infrastructure.Auth;
+using VehicleInsurance.Infrastructure.Common.Email;
+using VehicleInsurance.Infrastructure.EmailVerification;
+using VehicleInsurance.Api.Middleware;
+using Microsoft.AspNetCore.Routing;
+using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using VehicleInsurance.Infrastructure.EmailVerification;
+using VehicleInsurance.Application.EmailVerification;
 using VehicleInsurance.Infrastructure.Auth;
 using VehicleInsurance.Infrastructure.Users;
-using VehicleInsurance.Api.Middleware;
+using Microsoft.AspNetCore.Mvc.ApplicationParts;  // ApplicationPartManager
+Console.WriteLine(">>> BOOT VEHICLE API :: 9f6ab7c6-2a7a-4c79-8b35-7f9b6db3f33b"); // dấu hiệu chắc chắn
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Controllers + FluentValidation (v11+)
+// Logging (đặt trước Build)
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+builder.Logging.SetMinimumLevel(LogLevel.Information);
+
+// MVC + FV
 builder.Services.AddControllers();
-builder.Services.AddFluentValidationAutoValidation(); // thay cho AddFluentValidation()
-builder.Services.AddValidatorsFromAssemblyContaining<VehicleInsurance.Api.Validators.RegisterRequestValidator>();// 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<VehicleInsurance.Api.Validators.RegisterRequestValidator>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// DbContext MySQL 5.7
+// DbContext
 var cs = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseMySql(cs, new MySqlServerVersion(new Version(5, 7, 0)),
+    opt.UseMySql(cs, new MySqlServerVersion(new Version(5,7,0)),
         my => my.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
 
-// Repo + Service
+// DI
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
+builder.Services.AddScoped<IEmailVerificationService, VehicleInsurance.Infrastructure.Common.Email.EmailVerificationService>();
 
-// JWT config
+builder.Services.AddSingleton<IEmailSender>(sp =>
+{
+    var cfg = builder.Configuration;
+    return new SmtpEmailSender(
+        cfg["Smtp:Host"]!,
+        int.TryParse(cfg["Smtp:Port"], out var p) ? p : 587,
+        cfg["Smtp:User"]!,
+        cfg["Smtp:Pass"]!,
+        cfg["Smtp:From"]!
+    );
+});
+
+// JWT
 var jwtIssuer = builder.Configuration["Jwt:Issuer"]!;
 var jwtAudience = builder.Configuration["Jwt:Audience"]!;
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;
@@ -49,10 +79,29 @@ var accessMinutes = int.TryParse(builder.Configuration["Jwt:AccessTokenMinutes"]
 
 builder.Services.AddSingleton(new JwtTokenService(jwtIssuer, jwtAudience, jwtSecret, TimeSpan.FromMinutes(accessMinutes)));
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
-builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
-builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
-// JwtBearer đọc token từ cookie "access_token"
+
+// Chuẩn hoá lỗi model binding
+builder.Services.Configure<ApiBehaviorOptions>(opt =>
+{
+    opt.InvalidModelStateResponseFactory = context =>
+    {
+        var errors = context.ModelState
+            .Where(kvp => kvp.Value?.Errors?.Count > 0)
+            .ToDictionary(
+                kvp => kvp.Key,
+                kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
+            );
+
+        var payload = new
+        {
+            error = new { code = ErrorCodes.BadRequest, message = "Request is invalid", errors },
+            traceId = context.HttpContext.TraceIdentifier
+        };
+        return new BadRequestObjectResult(payload);
+    };
+});
+
+// AuthN/AuthZ
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -82,38 +131,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Chuẩn hóa lỗi 400 từ model binding
-builder.Services.Configure<ApiBehaviorOptions>(opt =>
-{
-    opt.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState
-            .Where(kvp => kvp.Value?.Errors?.Count > 0)
-            .ToDictionary(
-                kvp => kvp.Key,
-                kvp => kvp.Value!.Errors.Select(e => e.ErrorMessage).ToArray()
-            );
-
-        var payload = new
-        {
-            error = new
-            {
-                code = ErrorCodes.BadRequest,
-                message = "Request is invalid",
-                errors
-            },
-            traceId = context.HttpContext.TraceIdentifier
-        };
-
-        return new BadRequestObjectResult(payload);
-    };
-});
-
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Bắt lỗi thật sớm
 app.UseMiddleware<ErrorHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())
@@ -122,12 +143,56 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// TẠM thời tắt redirect HTTPS để khỏi nhiễu debug
+// app.UseHttpsRedirection();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllers();
+
+// ===== DEBUG endpoints =====
+app.MapGet("/ping", () => Results.Text("pong"));
+app.MapGet("/__routes", (EndpointDataSource es) =>
+{
+    var routes = es.Endpoints
+        .OfType<RouteEndpoint>()
+        .Select(e => new
+        {
+            Pattern = e.RoutePattern.RawText,
+            Methods = string.Join(",", e.Metadata.OfType<HttpMethodMetadata>().SelectMany(m => m.HttpMethods))
+        });
+    return Results.Json(routes, new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+});
+// ===========================
+app.Lifetime.ApplicationStarted.Register(() =>
+{
+    try
+    {
+        var sp = app.Services;
+        var partManager = sp.GetRequiredService<ApplicationPartManager>();
+        var controllerFeature = new ControllerFeature();
+        partManager.PopulateFeature(controllerFeature);
+
+        Console.WriteLine("=== MVC Controllers discovered ===");
+        foreach (var c in controllerFeature.Controllers)
+        {
+            Console.WriteLine($" - {c.FullName}");
+        }
+
+        var es = sp.GetRequiredService<EndpointDataSource>();
+        Console.WriteLine("=== Endpoints mapped ===");
+        foreach (var e in es.Endpoints.OfType<RouteEndpoint>())
+        {
+            var methods = string.Join(",", e.Metadata.OfType<HttpMethodMetadata>().SelectMany(m => m.HttpMethods));
+            Console.WriteLine($" - {methods} {e.RoutePattern.RawText}");
+        }
+        Console.WriteLine("==================================");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine("Failed to dump controllers/endpoints: " + ex);
+    }
+});
 app.Run();
-builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
-builder.Logging.AddDebug();
-builder.Logging.SetMinimumLevel(LogLevel.Information);
+

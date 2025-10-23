@@ -8,6 +8,7 @@ C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\VehicleInsurance.Application.AssemblyInfoInputs.cache
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\VehicleInsurance.Application.AssemblyInfo.cs
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\VehicleInsurance.Application.csproj.CoreCompileInputs.cache
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\VehicleInsurance.Application.sourcelink.json
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\VehicleI.DA9E1508.Up2Date
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\VehicleInsurance.Application.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Application\obj\Debug\net9.0\refint\VehicleInsurance.Application.dll

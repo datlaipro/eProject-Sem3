@@ -12,6 +12,7 @@ namespace VehicleInsurance.Application.Auth;
 public class AuthService
 {
     private readonly IUserRepository _users;
+  
     private readonly IRefreshTokenRepository _refreshRepo;
     private readonly JwtTokenService _jwt;
     private readonly TimeSpan _refreshTtl = TimeSpan.FromDays(30);
@@ -112,6 +113,20 @@ public class AuthService
         var access = _jwt.CreateAccessToken(auth);
         return (auth, access, newRt, newHash, token.TokenFamily ?? "");
     }
+
+     /// <summary>
+    /// Thu hồi tất cả refresh tokens còn hiệu lực thuộc 1 "family" của user.
+    /// Dùng cho logout (một thiết bị) hoặc logout-all-tuỳ cách bạn cài family.
+    /// </summary>
+ public async Task<int> RevokeRefreshFamilyAsync(long userId, string family, CancellationToken ct = default)
+{
+    if (string.IsNullOrWhiteSpace(family)) return 0;
+    var affected = await _refreshRepo.RevokeFamilyAsync((ulong)userId, family, ct);
+    _log.LogInformation("Revoked {Count} refresh tokens for user {UserId} (family={Family})",
+        affected, userId, family);
+    return affected;
+}
+
 
     public static string Sha256Hex(string input)
     {
