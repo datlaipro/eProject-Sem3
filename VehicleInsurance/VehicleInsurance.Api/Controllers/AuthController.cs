@@ -108,7 +108,7 @@ public async Task<IActionResult> Logout(CancellationToken ct)
         Response.Cookies.Append(name, value, new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,           // bật HTTPS trong môi trường production
+            Secure = false,           // bật HTTPS trong môi trường production
             SameSite = sameSite,
             Expires = DateTimeOffset.UtcNow.Add(ttl),
             Path = "/"
@@ -121,7 +121,7 @@ public async Task<IActionResult> Logout(CancellationToken ct)
         {
             Expires = DateTimeOffset.UtcNow.AddDays(-1),
             HttpOnly = true,
-            Secure = true,
+            Secure = false,
             SameSite = SameSiteMode.Strict,
             Path = "/"
         });

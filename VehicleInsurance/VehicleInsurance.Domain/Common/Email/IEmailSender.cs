@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-namespace VehicleInsurance.Application.Common.Email;
+namespace VehicleInsurance.Domain.Common.Email;
 
 public interface IEmailSender
 {

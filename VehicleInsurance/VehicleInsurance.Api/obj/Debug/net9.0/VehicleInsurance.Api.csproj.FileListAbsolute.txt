@@ -16,12 +16,12 @@ C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\ne
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\MailKit.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.AspNetCore.OpenApi.dll
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.AspNetCore.WebUtilities.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Abstractions.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.Relational.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Extensions.Caching.Abstractions.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Extensions.Caching.Memory.dll
+C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Extensions.Configuration.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Extensions.Configuration.Abstractions.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll
@@ -36,7 +36,6 @@ C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\ne
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
-C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.Net.Http.Headers.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\Microsoft.OpenApi.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\MimeKit.dll
 C:\Users\Public\eProject-Sem3\VehicleInsurance\VehicleInsurance.Api\bin\Debug\net9.0\MySqlConnector.dll

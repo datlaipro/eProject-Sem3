@@ -5,6 +5,7 @@ using VehicleInsurance.Application.EmailVerification;
 using VehicleInsurance.Domain.EmailVerification;
 namespace VehicleInsurance.Infrastructure.EmailVerification;
 
+using VehicleInsurance.Infrastructure.Data;
 public class EmailVerificationTokenRepository : IEmailVerificationTokenRepository
 {
     private readonly AppDbContext _db;

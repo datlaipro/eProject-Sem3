@@ -2,8 +2,8 @@ namespace VehicleInsurance.Domain.Auth;
 
 public class RefreshToken
 {
-    public ulong Id { get; set; }
-    public ulong UserId { get; set; }
+    public long Id { get; set; }
+    public long UserId { get; set; }
     public string TokenHash { get; set; } = default!; // SHA-256 hex (64)
     public string? TokenFamily { get; set; }          // optional UUID
     public DateTime IssuedAt { get; set; }

@@ -4,31 +4,37 @@ using Microsoft.Extensions.Logging;
 using BCrypt.Net;
 using VehicleInsurance.Domain.Users;
 using VehicleInsurance.Domain.Auth;
-using VehicleInsurance.Application.Common.Errors;
-using VehicleInsurance.Application.Common.Exceptions;
-namespace VehicleInsurance.Application.Auth;
+using VehicleInsurance.Domain.Common.Errors;
+using VehicleInsurance.Domain.Common.Exceptions;
 
+namespace VehicleInsurance.Application.Auth;
 
 public class AuthService
 {
     private readonly IUserRepository _users;
-  
     private readonly IRefreshTokenRepository _refreshRepo;
     private readonly JwtTokenService _jwt;
     private readonly TimeSpan _refreshTtl = TimeSpan.FromDays(30);
     private readonly ILogger<AuthService> _log;
-    public AuthService(IUserRepository users, IRefreshTokenRepository refreshRepo, JwtTokenService jwt, ILogger<AuthService> log)
-    {
 
-        _users = users; _refreshRepo = refreshRepo; _jwt = jwt; _log = log;
+    public AuthService(
+        IUserRepository users,
+        IRefreshTokenRepository refreshRepo,
+        JwtTokenService jwt,
+        ILogger<AuthService> log)
+    {
+        _users = users;
+        _refreshRepo = refreshRepo;
+        _jwt = jwt;
+        _log = log;
     }
 
+    // 🟢 Đăng ký tài khoản mới
     public async Task<AuthResult> RegisterAsync(RegisterRequest req, CancellationToken ct = default)
     {
         var exists = await _users.FindByEmailAsync(req.Email, ct);
         if (exists is not null)
             throw new ConflictException("Email already exists.", ErrorCodes.EmailExists);
-
 
         var hash = BCrypt.Net.BCrypt.HashPassword(req.Password);
         var user = await _users.AddAsync(new User
@@ -43,31 +49,50 @@ public class AuthService
         return new AuthResult(user.Id, user.Username, user.Email, user.Role);
     }
 
+    // 🟢 Đăng nhập và tạo JWT + Refresh Token
     public async Task<(AuthResult user, string accessToken, string refreshToken, string refreshHash, string refreshFamily)>
         LoginAsync(LoginRequest req, string? ip, string? ua, CancellationToken ct = default)
     {
         var user = await _users.FindByEmailAsync(req.EmailOrUsername, ct)
                    ?? await _users.FindByUsernameAsync(req.EmailOrUsername, ct)
                    ?? throw new InvalidLoginException("Tài khoản hoặc mật khẩu không đúng", ErrorCodes.Unauthorized);
-        _log.LogInformation("Login found user {@User}", new { user.Id, user.Username, user.Active });
 
-        if (!user.Active) throw new InvalidLoginException("User is inactive.", ErrorCodes.Unauthorized);
+        _log.LogInformation("🔍 Login found user {@User}", new { user.Id, user.Username, user.Active });
+
+        if (!user.Active)
+            throw new InvalidLoginException("Tài khoản đang bị vô hiệu hóa.", ErrorCodes.Unauthorized);
 
         if (!BCrypt.Net.BCrypt.Verify(req.Password, user.PasswordHash))
             throw new InvalidLoginException("Tài khoản hoặc mật khẩu không đúng", ErrorCodes.BadRequest);
 
-        var auth = new AuthResult(user.Id, user.Username, user.Email, user.Role);
+        // 🧩 Lấy roles và permissions từ DB
+        var roles = await _users.GetUserRolesAsync(user.Id, ct);
+        var permissions = await _users.GetUserPermissionsAsync(user.Id, ct); // Nếu chưa có bảng permissions thì để danh sách rỗng
+
+        if (roles == null || !roles.Any())
+            roles = new List<string> { user.Role }; // fallback nếu user chỉ có 1 role mặc định
+
+        var auth = new AuthResult(
+    user.Id,
+    user.Username,
+    user.Email,
+    user.Role,    // Role đơn (CUSTOMER / ADMIN)
+    roles,        // Danh sách roles từ DB
+    permissions   // Danh sách quyền (nếu có)
+);
+
+        // 🪪 Tạo Access Token chứa roles & permissions
         var accessToken = _jwt.CreateAccessToken(auth);
 
-        // tạo refresh token (plaintext) + hash
+        // 🔄 Tạo Refresh Token (plaintext + hash)
         var refreshToken = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         var refreshHash = Sha256Hex(refreshToken);
         var family = Guid.NewGuid().ToString();
-
         var now = DateTime.UtcNow;
+
         await _refreshRepo.AddAsync(new RefreshToken
         {
-            UserId = (ulong)user.Id,
+            UserId = user.Id,
             TokenHash = refreshHash,
             TokenFamily = family,
             IssuedAt = now,
@@ -82,18 +107,21 @@ public class AuthService
         return (auth, accessToken, refreshToken, refreshHash, family);
     }
 
+    // 🟢 Làm mới Access Token bằng Refresh Token
     public async Task<(AuthResult user, string accessToken, string newRefreshToken, string newHash, string family)>
         RefreshAsync(long userId, string rawRefreshToken, string? ip, string? ua, CancellationToken ct = default)
     {
         var hash = Sha256Hex(rawRefreshToken);
-        var token = await _refreshRepo.FindValidAsync((ulong)userId, hash, ct)
-                    ?? throw new InvalidOperationException("Refresh token invalid or expired.");
+        var token = await _refreshRepo.FindValidAsync(userId, hash, ct)
+                    ?? throw new InvalidOperationException("Refresh token không hợp lệ hoặc đã hết hạn.");
 
-        // rotate RT
+        // 🧩 Thu hồi RT cũ và phát mới
         await _refreshRepo.RevokeAsync(token, ct: ct);
+
         var newRt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
         var newHash = Sha256Hex(newRt);
         var now = DateTime.UtcNow;
+
         await _refreshRepo.AddAsync(new RefreshToken
         {
             UserId = token.UserId,
@@ -108,26 +136,39 @@ public class AuthService
             UserAgent = ua
         }, ct);
 
-        // bạn có thể lấy user lại từ repo nếu cần claim mới chi tiết hơn
-        var auth = new AuthResult((long)token.UserId, "user", "email", "CUSTOMER");
+        // 🧩 Lấy user lại để cập nhật claim roles/permissions
+        var user = await _users.FindByIdAsync(userId, ct)
+                    ?? throw new InvalidOperationException("User not found");
+
+        var roles = await _users.GetUserRolesAsync(user.Id, ct);
+        var permissions = await _users.GetUserPermissionsAsync(user.Id, ct);
+
+        var auth = new AuthResult(
+            user.Id,
+            user.Username,
+            user.Email,
+            roles.FirstOrDefault() ?? user.Role,
+            roles,
+            permissions
+        );
+
         var access = _jwt.CreateAccessToken(auth);
         return (auth, access, newRt, newHash, token.TokenFamily ?? "");
     }
 
-     /// <summary>
-    /// Thu hồi tất cả refresh tokens còn hiệu lực thuộc 1 "family" của user.
-    /// Dùng cho logout (một thiết bị) hoặc logout-all-tuỳ cách bạn cài family.
-    /// </summary>
- public async Task<int> RevokeRefreshFamilyAsync(long userId, string family, CancellationToken ct = default)
-{
-    if (string.IsNullOrWhiteSpace(family)) return 0;
-    var affected = await _refreshRepo.RevokeFamilyAsync((ulong)userId, family, ct);
-    _log.LogInformation("Revoked {Count} refresh tokens for user {UserId} (family={Family})",
-        affected, userId, family);
-    return affected;
-}
+    // 🟢 Thu hồi tất cả refresh tokens cùng "family" (logout all devices)
+    public async Task<int> RevokeRefreshFamilyAsync(long userId, string family, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(family)) return 0;
 
+        var affected = await _refreshRepo.RevokeFamilyAsync(userId, family, ct);
+        _log.LogInformation("Revoked {Count} refresh tokens for user {UserId} (family={Family})",
+            affected, userId, family);
 
+        return affected;
+    }
+
+    // 🧩 Tiện ích mã hóa SHA-256
     public static string Sha256Hex(string input)
     {
         using var sha = SHA256.Create();

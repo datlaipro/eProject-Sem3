@@ -19,4 +19,11 @@ public record LoginRequest(
     [property: Required] string Password
 );
 
-public record AuthResult(long UserId, string Username, string Email, string Role);
+public record AuthResult(
+    long UserId,
+    string Username,
+    string Email,
+    string Role,                       // Giữ lại để tương thích cũ
+    IEnumerable<string>? Roles = null, // Nếu người dùng có nhiều vai trò
+    IEnumerable<string>? Permissions = null // Nếu có hệ thống quyền chi tiết
+);

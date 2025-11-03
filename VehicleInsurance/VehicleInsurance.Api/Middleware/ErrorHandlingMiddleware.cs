@@ -1,8 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using FluentValidation;
-using VehicleInsurance.Application.Common.Errors;
-using VehicleInsurance.Application.Common.Exceptions;
+using VehicleInsurance.Domain.Common.Errors;
+using VehicleInsurance.Domain.Common.Exceptions;
 
 namespace VehicleInsurance.Api.Middleware;
 

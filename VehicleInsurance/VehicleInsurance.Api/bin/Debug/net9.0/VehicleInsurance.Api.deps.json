@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v9.0": {
       "VehicleInsurance.Api/1.0.0": {
         "dependencies": {
+          "AutoMapper": "12.0.1",
           "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
           "FluentValidation": "12.0.0",
           "FluentValidation.AspNetCore": "11.3.1",
@@ -57,11 +58,11 @@
           }
         }
       },
-      "BouncyCastle.Cryptography/2.6.1": {
+      "BouncyCastle.Cryptography/2.4.0": {
         "runtime": {
           "lib/net6.0/BouncyCastle.Cryptography.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.6.1.59591"
+            "fileVersion": "2.4.0.33771"
           }
         }
       },
@@ -97,15 +98,14 @@
           }
         }
       },
-      "MailKit/4.14.1": {
+      "MailKit/4.7.1": {
         "dependencies": {
-          "MimeKit": "4.14.0",
-          "System.Formats.Asn1": "8.0.1"
+          "MimeKit": "4.7.1"
         },
         "runtime": {
           "lib/net8.0/MailKit.dll": {
-            "assemblyVersion": "4.14.0.0",
-            "fileVersion": "4.14.1.0"
+            "assemblyVersion": "4.7.0.0",
+            "fileVersion": "4.7.1.0"
           }
         }
       },
@@ -131,15 +131,9 @@
           }
         }
       },
-      "Microsoft.AspNetCore.WebUtilities/9.0.10": {
+      "Microsoft.AspNetCore.WebUtilities/9.0.0": {
         "dependencies": {
-          "Microsoft.Net.Http.Headers": "9.0.10"
-        },
-        "runtime": {
-          "lib/net9.0/Microsoft.AspNetCore.WebUtilities.dll": {
-            "assemblyVersion": "9.0.0.0",
-            "fileVersion": "9.0.1025.47517"
-          }
+          "Microsoft.Net.Http.Headers": "9.0.0"
         }
       },
       "Microsoft.CSharp/4.7.0": {},
@@ -207,10 +201,16 @@
           }
         }
       },
-      "Microsoft.Extensions.Configuration/9.0.0": {
+      "Microsoft.Extensions.Configuration/9.0.10": {
         "dependencies": {
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.10",
           "Microsoft.Extensions.Primitives": "9.0.10"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Configuration.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.1025.47515"
+          }
         }
       },
       "Microsoft.Extensions.Configuration.Abstractions/9.0.10": {
@@ -385,15 +385,9 @@
           }
         }
       },
-      "Microsoft.Net.Http.Headers/9.0.10": {
+      "Microsoft.Net.Http.Headers/9.0.0": {
         "dependencies": {
           "Microsoft.Extensions.Primitives": "9.0.10"
-        },
-        "runtime": {
-          "lib/net9.0/Microsoft.Net.Http.Headers.dll": {
-            "assemblyVersion": "9.0.0.0",
-            "fileVersion": "9.0.1025.47517"
-          }
         }
       },
       "Microsoft.OpenApi/1.6.25": {
@@ -404,15 +398,16 @@
           }
         }
       },
-      "MimeKit/4.14.0": {
+      "MimeKit/4.7.1": {
         "dependencies": {
-          "BouncyCastle.Cryptography": "2.6.1",
-          "System.Security.Cryptography.Pkcs": "8.0.1"
+          "BouncyCastle.Cryptography": "2.4.0",
+          "System.Formats.Asn1": "8.0.1",
+          "System.Security.Cryptography.Pkcs": "8.0.0"
         },
         "runtime": {
           "lib/net8.0/MimeKit.dll": {
-            "assemblyVersion": "4.14.0.0",
-            "fileVersion": "4.14.0.0"
+            "assemblyVersion": "4.7.0.0",
+            "fileVersion": "4.7.1.0"
           }
         }
       },
@@ -600,11 +595,22 @@
           }
         }
       },
-      "System.Security.Cryptography.Pkcs/8.0.1": {},
+      "System.Security.Cryptography.Pkcs/8.0.0": {
+        "dependencies": {
+          "System.Formats.Asn1": "8.0.1"
+        }
+      },
       "VehicleInsurance.Application/1.0.0": {
         "dependencies": {
+          "AutoMapper": "12.0.1",
+          "AutoMapper.Extensions.Microsoft.DependencyInjection": "12.0.1",
           "BCrypt.Net-Next": "4.0.3",
+          "FluentValidation": "12.0.0",
+          "Microsoft.EntityFrameworkCore": "9.0.10",
+          "Microsoft.EntityFrameworkCore.Abstractions": "9.0.10",
+          "Microsoft.EntityFrameworkCore.Relational": "9.0.10",
           "Microsoft.IdentityModel.Tokens": "8.14.0",
+          "Pomelo.EntityFrameworkCore.MySql": "9.0.0",
           "System.IdentityModel.Tokens.Jwt": "8.14.0",
           "VehicleInsurance.Domain": "1.0.0"
         },
@@ -625,13 +631,14 @@
       },
       "VehicleInsurance.Infrastructure/1.0.0": {
         "dependencies": {
-          "MailKit": "4.14.1",
-          "Microsoft.AspNetCore.WebUtilities": "9.0.10",
+          "MailKit": "4.7.1",
+          "Microsoft.AspNetCore.WebUtilities": "9.0.0",
           "Microsoft.EntityFrameworkCore": "9.0.10",
+          "Microsoft.EntityFrameworkCore.Abstractions": "9.0.10",
           "Microsoft.EntityFrameworkCore.Relational": "9.0.10",
-          "Microsoft.Extensions.Configuration": "9.0.0",
+          "Microsoft.Extensions.Configuration": "9.0.10",
           "Microsoft.Extensions.Configuration.Abstractions": "9.0.10",
-          "MimeKit": "4.14.0",
+          "MimeKit": "4.7.1",
           "Pomelo.EntityFrameworkCore.MySql": "9.0.0",
           "VehicleInsurance.Application": "1.0.0",
           "VehicleInsurance.Domain": "1.0.0"
@@ -672,12 +679,12 @@
       "path": "bcrypt.net-next/4.0.3",
       "hashPath": "bcrypt.net-next.4.0.3.nupkg.sha512"
     },
-    "BouncyCastle.Cryptography/2.6.1": {
+    "BouncyCastle.Cryptography/2.4.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-vZsG2YILhthgRqO+ZVgRff4ZFKKTl0v7kqaVBLCtRvpREhfBP33pcWrdA3PRYgWuFL1RxiUFvjMUHTdBZlJcoA==",
-      "path": "bouncycastle.cryptography/2.6.1",
-      "hashPath": "bouncycastle.cryptography.2.6.1.nupkg.sha512"
+      "sha512": "sha512-SwXsAV3sMvAU/Nn31pbjhWurYSjJ+/giI/0n6tCrYoupEK34iIHCuk3STAd9fx8yudM85KkLSVdn951vTng/vQ==",
+      "path": "bouncycastle.cryptography/2.4.0",
+      "hashPath": "bouncycastle.cryptography.2.4.0.nupkg.sha512"
     },
     "FluentValidation/12.0.0": {
       "type": "package",
@@ -700,12 +707,12 @@
       "path": "fluentvalidation.dependencyinjectionextensions/11.11.0",
       "hashPath": "fluentvalidation.dependencyinjectionextensions.11.11.0.nupkg.sha512"
     },
-    "MailKit/4.14.1": {
+    "MailKit/4.7.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Rawu+h3lSSjKra0AxR+IUB99VQ7jWI+MvxThekqLhf+ic7VQ7a69lmPFW+LXuRYHla4ADcn3x16Gsvju3LTq9w==",
-      "path": "mailkit/4.14.1",
-      "hashPath": "mailkit.4.14.1.nupkg.sha512"
+      "sha512": "sha512-mDTq1tWZfsgpCPVfgHF3FDixczPSh5wU22lzo2buDu8OrSAqV3ybPKojjOoUygkLpPRmZ4VAZ+k+PBi5+igGdQ==",
+      "path": "mailkit/4.7.1",
+      "hashPath": "mailkit.4.7.1.nupkg.sha512"
     },
     "Microsoft.AspNetCore.Authentication.JwtBearer/9.0.10": {
       "type": "package",
@@ -721,12 +728,12 @@
       "path": "microsoft.aspnetcore.openapi/9.0.2",
       "hashPath": "microsoft.aspnetcore.openapi.9.0.2.nupkg.sha512"
     },
-    "Microsoft.AspNetCore.WebUtilities/9.0.10": {
+    "Microsoft.AspNetCore.WebUtilities/9.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-yJWURBKJtp0XL0HJWZgklNrktLWtEd3S1kbvWVA/3M5ptZ7VlFUo1l1wVFDK6RHsW1EAwR/rraBmtFntjdtJeA==",
-      "path": "microsoft.aspnetcore.webutilities/9.0.10",
-      "hashPath": "microsoft.aspnetcore.webutilities.9.0.10.nupkg.sha512"
+      "sha512": "sha512-nUtmKeQ2cBiiZNYkl4KpQO8C2YP/EAc/r6PymeaRnO5AxBtOs6GkWXwZh+65vjfjXtlIxZeexGzXA3vy7+G7Vw==",
+      "path": "microsoft.aspnetcore.webutilities/9.0.0",
+      "hashPath": "microsoft.aspnetcore.webutilities.9.0.0.nupkg.sha512"
     },
     "Microsoft.CSharp/4.7.0": {
       "type": "package",
@@ -784,12 +791,12 @@
       "path": "microsoft.extensions.caching.memory/9.0.10",
       "hashPath": "microsoft.extensions.caching.memory.9.0.10.nupkg.sha512"
     },
-    "Microsoft.Extensions.Configuration/9.0.0": {
+    "Microsoft.Extensions.Configuration/9.0.10": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-YIMO9T3JL8MeEXgVozKt2v79hquo/EFtnY0vgxmLnUvk1Rei/halI7kOWZL2RBeV9FMGzgM9LZA8CVaNwFMaNA==",
-      "path": "microsoft.extensions.configuration/9.0.0",
-      "hashPath": "microsoft.extensions.configuration.9.0.0.nupkg.sha512"
+      "sha512": "sha512-UAm3SLGAMlJdowbN+/xnh2UGJkdJoXVm4MsdhZ60dAMS8jteoyCx5WfIab5DKv0TCYpdhVecLJVUjEO3abs9UQ==",
+      "path": "microsoft.extensions.configuration/9.0.10",
+      "hashPath": "microsoft.extensions.configuration.9.0.10.nupkg.sha512"
     },
     "Microsoft.Extensions.Configuration.Abstractions/9.0.10": {
       "type": "package",
@@ -917,12 +924,12 @@
       "path": "microsoft.identitymodel.tokens/8.14.0",
       "hashPath": "microsoft.identitymodel.tokens.8.14.0.nupkg.sha512"
     },
-    "Microsoft.Net.Http.Headers/9.0.10": {
+    "Microsoft.Net.Http.Headers/9.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-5RXpDefQ1RXKxdXc3QutP9JywZgXXzLhyB7cYAOQ4Y7JdRczdYTvTZpXMPlKDKzMCQMH5MXIYigh3xW2CV7JQw==",
-      "path": "microsoft.net.http.headers/9.0.10",
-      "hashPath": "microsoft.net.http.headers.9.0.10.nupkg.sha512"
+      "sha512": "sha512-Haa8791nKzjZtck7KOzM4hgoyvwBfVzkyTLdmEVRm3FdHB1iahQZNiou17hSF5PlOQT0hr4BAQYeZYvfs4BZMQ==",
+      "path": "microsoft.net.http.headers/9.0.0",
+      "hashPath": "microsoft.net.http.headers.9.0.0.nupkg.sha512"
     },
     "Microsoft.OpenApi/1.6.25": {
       "type": "package",
@@ -931,12 +938,12 @@
       "path": "microsoft.openapi/1.6.25",
       "hashPath": "microsoft.openapi.1.6.25.nupkg.sha512"
     },
-    "MimeKit/4.14.0": {
+    "MimeKit/4.7.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-g0LtsMC8DCTkc030C3UgVqbltOJmV5cz4AX8ASowz2ZA+lxopXSYtC1XXYmenxy606aWFLwi5Xy4cC/zyYjbjQ==",
-      "path": "mimekit/4.14.0",
-      "hashPath": "mimekit.4.14.0.nupkg.sha512"
+      "sha512": "sha512-Qoj4aVvhX14A1FNvaJ33hzOP4VZI2j+Mr38I9wSGcjMq4BYDtWLJG89aJ9nRW2cNfH6Czjwyp7+Mh++xv3AZvg==",
+      "path": "mimekit/4.7.1",
+      "hashPath": "mimekit.4.7.1.nupkg.sha512"
     },
     "MySqlConnector/2.4.0": {
       "type": "package",
@@ -1057,12 +1064,12 @@
       "path": "system.identitymodel.tokens.jwt/8.14.0",
       "hashPath": "system.identitymodel.tokens.jwt.8.14.0.nupkg.sha512"
     },
-    "System.Security.Cryptography.Pkcs/8.0.1": {
+    "System.Security.Cryptography.Pkcs/8.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-CoCRHFym33aUSf/NtWSVSZa99dkd0Hm7OCZUxORBjRB16LNhIEOf8THPqzIYlvKM0nNDAPTRBa1FxEECrgaxxA==",
-      "path": "system.security.cryptography.pkcs/8.0.1",
-      "hashPath": "system.security.cryptography.pkcs.8.0.1.nupkg.sha512"
+      "sha512": "sha512-ULmp3xoOwNYjOYp4JZ2NK/6NdTgiN1GQXzVVN1njQ7LOZ0d0B9vyMnhyqbIi9Qw4JXj1JgCsitkTShboHRx7Eg==",
+      "path": "system.security.cryptography.pkcs/8.0.0",
+      "hashPath": "system.security.cryptography.pkcs.8.0.0.nupkg.sha512"
     },
     "VehicleInsurance.Application/1.0.0": {
       "type": "project",

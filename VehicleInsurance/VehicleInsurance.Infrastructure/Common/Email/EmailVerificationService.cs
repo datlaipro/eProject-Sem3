@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-using VehicleInsurance.Application.Common.Email;
+using VehicleInsurance.Domain.Common.Email;
 using VehicleInsurance.Application.EmailVerification;
-using VehicleInsurance.Application.Common.Errors;
-using VehicleInsurance.Application.Common.Exceptions;
-
+using VehicleInsurance.Domain.Common.Errors;
+using VehicleInsurance.Domain.Common.Exceptions;
+using VehicleInsurance.Infrastructure.Data;
 using VehicleInsurance.Domain.Users;
 using VehicleInsurance.Domain.EmailVerification;
 using VehicleInsurance.Infrastructure; // AppDbContext

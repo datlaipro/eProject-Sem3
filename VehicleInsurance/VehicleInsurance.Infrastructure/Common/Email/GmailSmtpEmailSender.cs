@@ -3,7 +3,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
 using Microsoft.Extensions.Configuration;
-using VehicleInsurance.Application.Common.Email;
+using VehicleInsurance.Domain.Common.Email;
 
 namespace VehicleInsurance.Infrastructure.Common.Email;
 

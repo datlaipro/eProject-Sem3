@@ -1,7 +1,7 @@
 // File: VehicleInsurance.Application/Common/Exceptions/AppExceptions.cs
 using System.Net;
 
-namespace VehicleInsurance.Application.Common.Exceptions
+namespace VehicleInsurance.Domain.Common.Exceptions
 {
     // Base: có Code + Status để middleware đọc
     public abstract class AppException : Exception

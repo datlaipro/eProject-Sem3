@@ -1,4 +1,4 @@
-namespace VehicleInsurance.Application.Common.Errors;
+namespace VehicleInsurance.Domain.Common.Errors;
 
 public static class ErrorCodes
 {

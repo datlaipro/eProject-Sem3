@@ -8,21 +8,29 @@ using Microsoft.IdentityModel.Tokens;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using VehicleInsurance.Application.Customers.Validators;
 using VehicleInsurance.Application.Auth;
-using VehicleInsurance.Application.Common.Email;
-using VehicleInsurance.Application.Common.Errors;
-using VehicleInsurance.Application.EmailVerification;
+using VehicleInsurance.Domain.Common.Email;
+using VehicleInsurance.Domain.Common.Errors;
+using VehicleInsurance.Application.Vehicles.Services;
+using VehicleInsurance.Application.Vehicles.Interfaces;
 
+using VehicleInsurance.Application.EmailVerification;
+using VehicleInsurance.Infrastructure.Customers;
 using VehicleInsurance.Domain.Auth;
 using VehicleInsurance.Domain.Users;
-
+using VehicleInsurance.Application.Customers.Services;
 using VehicleInsurance.Infrastructure;
 using VehicleInsurance.Infrastructure.Auth;
 using VehicleInsurance.Infrastructure.Users;
 using VehicleInsurance.Infrastructure.EmailVerification;
 using VehicleInsurance.Infrastructure.Common.Email; // GmailSmtpEmailSender
-
+using VehicleInsurance.Application.Customers.Interfaces;
+using VehicleInsurance.Infrastructure.Vehicles.Services;
+using VehicleInsurance.Infrastructure.Vehicles;
+using VehicleInsurance.Infrastructure.Data;
 using VehicleInsurance.Api.Middleware;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -42,6 +50,8 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<VehicleInsurance.Api.Validators.RegisterRequestValidator>();
 
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<CustomerCreateValidator>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -50,12 +60,31 @@ var cs = builder.Configuration.GetConnectionString("Default");
 builder.Services.AddDbContext<AppDbContext>(opt =>
     opt.UseMySql(cs, new MySqlServerVersion(new Version(5, 7, 0)),
         my => my.SchemaBehavior(MySqlSchemaBehavior.Ignore)));
-
 // ---------- DI (Repositories/Services) ----------
+
+// Auth + User + EmailVerification
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
 builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
+builder.Services.AddScoped<AuthService>();
+
+// Customers
+builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<CustomerService>();
+
+// Vehicles
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<IVehicleService, VehicleInsurance.Infrastructure.Vehicles.Services.VehicleService>();
+
+// AutoMapper
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+// ===== VEHICLE MODULE =====
+
+
+// ---------- AutoMapper ----------
+
+
 
 // IEmailSender: dùng Gmail SMTP trong Development
 if (builder.Environment.IsDevelopment())
@@ -115,6 +144,9 @@ builder.Services.AddAuthentication(options =>
         ValidateAudience = true,
         ValidateIssuerSigningKey = true,
         ValidateLifetime = true,
+        RoleClaimType = System.Security.Claims.ClaimTypes.Role,  // 👈 Bắt buộc
+        NameClaimType = System.Security.Claims.ClaimTypes.Name,
+
         ClockSkew = TimeSpan.FromSeconds(30)
     };
     options.Events = new JwtBearerEvents
@@ -146,6 +178,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    // app.UseDeveloperExceptionPage(); // log lỗi chi tiết
 }
 
 // app.UseHttpsRedirection(); // tắt tạm khi debug nếu cần
