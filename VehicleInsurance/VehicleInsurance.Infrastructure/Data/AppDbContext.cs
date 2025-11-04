@@ -17,7 +17,8 @@ namespace VehicleInsurance.Infrastructure.Data
 
         // DbSets
         public DbSet<Vehicle> Vehicles => Set<Vehicle>();   // <-- thêm dòng này
-
+                                                            // DbSets
+        public DbSet<Estimate> Estimates => Set<Estimate>();
         public DbSet<User> Users => Set<User>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<EmailVerificationToken> EmailVerificationTokens => Set<EmailVerificationToken>();
@@ -156,36 +157,114 @@ namespace VehicleInsurance.Infrastructure.Data
             });
             // ===== VEHICLES (mới thêm)
             b.Entity<Vehicle>(e =>
+ {
+     e.ToTable("vehicles");
+     e.HasKey(x => x.Id);
+
+     e.Property(x => x.Id)
+         .HasColumnName("id")
+         .ValueGeneratedOnAdd();
+
+     e.Property(x => x.CustomerId)
+         .HasColumnName("customer_id");
+
+     e.Property(x => x.Name)
+         .HasColumnName("name")
+         .IsRequired()
+         .HasMaxLength(255);
+
+     e.Property(x => x.OwnerName)
+         .HasColumnName("owner_name")
+         .HasMaxLength(255);
+
+     e.Property(x => x.Model)
+         .HasColumnName("model")
+         .HasMaxLength(100);
+
+     e.Property(x => x.Version)
+         .HasColumnName("version")
+         .HasMaxLength(100);
+
+     // ✅ Thêm cột seat_count thay cho rate
+     e.Property(x => x.SeatCount)
+         .HasColumnName("seat_count");
+
+     e.Property(x => x.BodyNumber)
+         .HasColumnName("body_number")
+         .HasMaxLength(64);
+
+     e.Property(x => x.EngineNumber)
+         .HasColumnName("engine_number")
+         .HasMaxLength(64);
+
+     e.Property(x => x.VehicleNumber)
+         .HasColumnName("vehicle_number")
+         .HasMaxLength(64);
+
+     e.Property(x => x.CreatedAt)
+         .HasColumnName("created_at");
+
+     e.Property(x => x.UpdatedAt)
+         .HasColumnName("updated_at");
+
+     // Index/Unique giống MySQL schema
+     e.HasIndex(x => x.CustomerId).HasDatabaseName("idx_vehicles_customer");
+     e.HasIndex(x => x.BodyNumber).IsUnique().HasDatabaseName("uk_vehicles_body");
+     e.HasIndex(x => x.EngineNumber).IsUnique().HasDatabaseName("uk_vehicles_engine");
+     e.HasIndex(x => x.VehicleNumber).IsUnique().HasDatabaseName("uk_vehicles_plate");
+
+     // FK -> customers.id (ON DELETE SET NULL, ON UPDATE CASCADE)
+     e.HasOne(x => x.Customer)
+      .WithMany(c => c.Vehicles)
+      .HasForeignKey(x => x.CustomerId)
+      .HasConstraintName("fk_vehicles_customer")
+      .OnDelete(DeleteBehavior.SetNull);
+ });
+            // ===== ESTIMATES (mới thêm)
+            b.Entity<Estimate>(e =>
             {
-                e.ToTable("vehicles");
+                e.ToTable("estimates");
                 e.HasKey(x => x.Id);
 
                 e.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
-                e.Property(x => x.CustomerId).HasColumnName("customer_id");
-                e.Property(x => x.Name).HasColumnName("name").IsRequired().HasMaxLength(255);
-                e.Property(x => x.OwnerName).HasColumnName("owner_name").HasMaxLength(255);
-                e.Property(x => x.Model).HasColumnName("model").HasMaxLength(100);
-                e.Property(x => x.Version).HasColumnName("version").HasMaxLength(100);
-                e.Property(x => x.Rate).HasColumnName("rate").HasColumnType("decimal(12,2)");
-                e.Property(x => x.BodyNumber).HasColumnName("body_number").HasMaxLength(64);
-                e.Property(x => x.EngineNumber).HasColumnName("engine_number").HasMaxLength(64);
-                e.Property(x => x.VehicleNumber).HasColumnName("vehicle_number").HasMaxLength(64);
-                e.Property(x => x.CreatedAt).HasColumnName("created_at");
-                e.Property(x => x.UpdatedAt).HasColumnName("updated_at");
+                e.Property(x => x.EstimateNumber).HasColumnName("estimate_number").IsRequired().HasMaxLength(32);
 
-                // Index/Unique giống MySQL schema
-                e.HasIndex(x => x.CustomerId).HasDatabaseName("idx_vehicles_customer");
-                e.HasIndex(x => x.BodyNumber).IsUnique().HasDatabaseName("uk_vehicles_body");
-                e.HasIndex(x => x.EngineNumber).IsUnique().HasDatabaseName("uk_vehicles_engine");
-                e.HasIndex(x => x.VehicleNumber).IsUnique().HasDatabaseName("uk_vehicles_plate");
+                e.Property(x => x.VehicleId).HasColumnName("vehicle_id"); // nullable
 
-                // FK -> customers.id (ON DELETE SET NULL, ON UPDATE CASCADE)
-                e.HasOne(x => x.Customer)
-                 .WithMany(c => c.Vehicles)
-                 .HasForeignKey(x => x.CustomerId)
-                 .HasConstraintName("fk_vehicles_customer")
-                 .OnDelete(DeleteBehavior.SetNull);
+                e.Property(x => x.VehicleName).HasColumnName("vehicle_name").HasMaxLength(255);
+                e.Property(x => x.VehicleModel).HasColumnName("vehicle_model").HasMaxLength(100);
+
+                e.Property(x => x.Rate).HasColumnName("rate").HasColumnType("decimal(12,2)"); // nếu không dùng có thể bỏ
+                e.Property(x => x.Warranty).HasColumnName("warranty").HasMaxLength(255);
+                e.Property(x => x.PolicyType).HasColumnName("policy_type").HasMaxLength(100);
+
+                e.Property(x => x.CreatedAt)
+ .HasColumnName("created_at")
+ .HasColumnType("timestamp")
+ .ValueGeneratedOnAdd()
+ .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                e.Property(x => x.UpdatedAt)
+                 .HasColumnName("updated_at")
+                 .HasColumnType("timestamp")
+                 .ValueGeneratedOnAddOrUpdate()
+                 .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+
+                // Indexes
+                e.HasIndex(x => x.EstimateNumber).IsUnique().HasDatabaseName("uk_estimates_no");
+                e.HasIndex(x => x.VehicleId).HasDatabaseName("idx_estimates_vehicle");
+
+
+
+                e.HasOne(x => x.Vehicle)
+                    .WithMany()                 // nếu Vehicle chưa có ICollection<Estimate>, đổi thành .WithMany()
+                    .HasForeignKey(x => x.VehicleId)
+                    .OnDelete(DeleteBehavior.SetNull)
+                    .HasConstraintName("fk_estimates_vehicle");
             });
+
+
 
         }
     }

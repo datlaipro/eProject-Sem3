@@ -7,7 +7,7 @@ public class VehicleResponse
     public string OwnerName { get; set; } = string.Empty;
     public string Model { get; set; } = string.Empty;
     public string Version { get; set; } = string.Empty;
-    public decimal Rate { get; set; }
+        public int SeatCount { get; set; }     // ✅ Thêm số chỗ ngồi
     public string BodyNumber { get; set; } = string.Empty;
     public string EngineNumber { get; set; } = string.Empty;
     public string VehicleNumber { get; set; } = string.Empty;

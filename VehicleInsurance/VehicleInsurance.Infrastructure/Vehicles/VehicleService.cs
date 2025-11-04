@@ -4,8 +4,8 @@ using VehicleInsurance.Application.Vehicles.Dtos;
 using VehicleInsurance.Application.Vehicles.Services;
 using VehicleInsurance.Domain.Common.Exceptions;
 using VehicleInsurance.Domain.Entity;
-using VehicleInsurance.Infrastructure;
 using VehicleInsurance.Infrastructure.Data;
+
 namespace VehicleInsurance.Infrastructure.Vehicles.Services
 {
     public class VehicleService : IVehicleService
@@ -37,7 +37,7 @@ namespace VehicleInsurance.Infrastructure.Vehicles.Services
                         OwnerName = v.OwnerName,
                         Model = v.Model,
                         Version = v.Version,
-                        Rate = v.Rate,
+                        SeatCount = v.SeatCount, // ✅ thay Rate bằng SeatCount
                         BodyNumber = v.BodyNumber,
                         EngineNumber = v.EngineNumber,
                         VehicleNumber = v.VehicleNumber
@@ -81,7 +81,7 @@ namespace VehicleInsurance.Infrastructure.Vehicles.Services
                     OwnerName = v.OwnerName,
                     Model = v.Model,
                     Version = v.Version,
-                    Rate = v.Rate,
+                    SeatCount = v.SeatCount, // ✅ thay Rate bằng SeatCount
                     BodyNumber = v.BodyNumber,
                     EngineNumber = v.EngineNumber,
                     VehicleNumber = v.VehicleNumber
@@ -110,7 +110,7 @@ namespace VehicleInsurance.Infrastructure.Vehicles.Services
                     OwnerName = req.OwnerName,
                     Model = req.Model,
                     Version = req.Version,
-                    Rate = req.Rate,
+                    SeatCount = req.SeatCount, // ✅ thêm trường mới
                     BodyNumber = req.BodyNumber,
                     EngineNumber = req.EngineNumber,
                     VehicleNumber = req.VehicleNumber,
@@ -130,7 +130,7 @@ namespace VehicleInsurance.Infrastructure.Vehicles.Services
                     OwnerName = entity.OwnerName,
                     Model = entity.Model,
                     Version = entity.Version,
-                    Rate = entity.Rate,
+                    SeatCount = entity.SeatCount, // ✅ thay Rate bằng SeatCount
                     BodyNumber = entity.BodyNumber,
                     EngineNumber = entity.EngineNumber,
                     VehicleNumber = entity.VehicleNumber
@@ -139,14 +139,9 @@ namespace VehicleInsurance.Infrastructure.Vehicles.Services
             catch (Exception ex)
             {
                 _logger.LogError(ex, "💥 [CreateAsync] Exception while creating vehicle for CustomerId = {CustomerId}", req.CustomerId);
-
-                // In lỗi chi tiết ra console (chắc chắn sẽ thấy trong Output của VS hoặc terminal)
                 Console.WriteLine($"🔥 VEHICLE CREATE ERROR: {ex.GetType().Name} - {ex.Message}\n{ex.StackTrace}");
-
-                // Ném ra lỗi business nhẹ để controller hiển thị 500
                 throw new ForbiddenAppException("cannot create vehicle");
             }
-
         }
 
         // ==============================================================
@@ -167,7 +162,7 @@ namespace VehicleInsurance.Infrastructure.Vehicles.Services
             v.OwnerName = req.OwnerName ?? v.OwnerName;
             v.Model = req.Model ?? v.Model;
             v.Version = req.Version ?? v.Version;
-            v.Rate = req.Rate ?? v.Rate;
+            v.SeatCount = req.SeatCount ?? v.SeatCount; // ✅ cập nhật mới
             v.BodyNumber = req.BodyNumber ?? v.BodyNumber;
             v.EngineNumber = req.EngineNumber ?? v.EngineNumber;
             v.VehicleNumber = req.VehicleNumber ?? v.VehicleNumber;

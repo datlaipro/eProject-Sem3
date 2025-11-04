@@ -8,7 +8,7 @@ namespace VehicleInsurance.Api.Controllers;
 [Authorize(Roles = "ADMIN")]
 
 [ApiController]
-[Route("customers")]
+[Route("api/customers")]
 public class CustomersController : ControllerBase
 {
     private readonly CustomerService _service;

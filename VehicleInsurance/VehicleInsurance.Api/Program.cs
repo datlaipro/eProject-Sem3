@@ -8,8 +8,8 @@ using Microsoft.IdentityModel.Tokens;
 using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 using FluentValidation;
 using FluentValidation.AspNetCore;
-using FluentValidation;
-using FluentValidation.AspNetCore;
+using VehicleInsurance.Application.Estimates.Services;
+using VehicleInsurance.Infrastructure.Estimates.Services;
 using VehicleInsurance.Application.Customers.Validators;
 using VehicleInsurance.Application.Auth;
 using VehicleInsurance.Domain.Common.Email;
@@ -76,6 +76,9 @@ builder.Services.AddScoped<CustomerService>();
 // Vehicles
 builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
 builder.Services.AddScoped<IVehicleService, VehicleInsurance.Infrastructure.Vehicles.Services.VehicleService>();
+// Estimates
+builder.Services.AddScoped<IEstimateService, EstimateService>();
+
 
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
