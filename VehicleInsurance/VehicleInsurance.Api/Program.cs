@@ -12,11 +12,14 @@ using VehicleInsurance.Application.Estimates.Services;
 using VehicleInsurance.Infrastructure.Estimates.Services;
 using VehicleInsurance.Application.Customers.Validators;
 using VehicleInsurance.Application.Auth;
+using VehicleInsurance.Application.Payments;
+using VehicleInsurance.Infrastructure.Payments;
 using VehicleInsurance.Domain.Common.Email;
 using VehicleInsurance.Domain.Common.Errors;
 using VehicleInsurance.Application.Vehicles.Services;
 using VehicleInsurance.Application.Vehicles.Interfaces;
-
+using VehicleInsurance.Application.Policies.Services;
+using VehicleInsurance.Infrastructure.Policies.Services;
 using VehicleInsurance.Application.EmailVerification;
 using VehicleInsurance.Infrastructure.Customers;
 using VehicleInsurance.Domain.Auth;
@@ -79,10 +82,26 @@ builder.Services.AddScoped<IVehicleService, VehicleInsurance.Infrastructure.Vehi
 // Estimates
 builder.Services.AddScoped<IEstimateService, EstimateService>();
 
-
+builder.Services.AddScoped<IPolicyService, PolicyService>();
 // AutoMapper
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 // ===== VEHICLE MODULE =====
+// đọc settings payment
+builder.Services.Configure<SepaySettings>(builder.Configuration.GetSection("Sepay"));
+
+// Nếu muốn dùng HttpClient cho Sepay
+builder.Services.AddHttpClient<SepayPaymentService>();
+
+if (builder.Environment.IsDevelopment())
+{
+    // dev: fake payment
+    builder.Services.AddScoped<IPaymentService, FakePaymentService>();
+}
+else
+{
+    // production: sepay real
+    builder.Services.AddScoped<IPaymentService, SepayPaymentService>();
+}
 
 
 // ---------- AutoMapper ----------

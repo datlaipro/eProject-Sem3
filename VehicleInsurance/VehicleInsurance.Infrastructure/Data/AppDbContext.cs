@@ -1,5 +1,6 @@
 using VehicleInsurance.Domain.Entity; // thêm namespace domain entity Vehicle
-
+using VehicleInsurance.Domain.Policies;
+using VehicleInsurance.Domain.Billings;
 
 namespace VehicleInsurance.Infrastructure.Data
 {
@@ -25,6 +26,8 @@ namespace VehicleInsurance.Infrastructure.Data
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
         public DbSet<Customer> Customers => Set<Customer>();   // <-- thêm
+        public DbSet<Policy> Policies => Set<Policy>();
+        public DbSet<Billing> Billings => Set<Billing>();
 
         protected override void OnModelCreating(ModelBuilder b)
         {
@@ -263,6 +266,95 @@ namespace VehicleInsurance.Infrastructure.Data
                     .OnDelete(DeleteBehavior.SetNull)
                     .HasConstraintName("fk_estimates_vehicle");
             });
+
+            // ===== POLICIES
+            b.Entity<Policy>(e =>
+            {
+                e.ToTable("policies");
+                e.HasKey(x => x.Id);
+
+                e.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                e.Property(x => x.PolicyNumber).HasColumnName("policy_number").IsRequired().HasMaxLength(32);
+
+                e.Property(x => x.CustomerId).HasColumnName("customer_id").IsRequired();
+                e.Property(x => x.VehicleId).HasColumnName("vehicle_id");
+
+                e.Property(x => x.PolicyDate).HasColumnName("policy_date");
+                e.Property(x => x.PolicyStartDate).HasColumnName("policy_start_date");
+                e.Property(x => x.PolicyEndDate).HasColumnName("policy_end_date");
+                e.Property(x => x.PolicyDurationDays).HasColumnName("policy_duration_days");
+
+                // enum string <-> varchar (MySQL 5.7)
+                e.Property(x => x.Status)
+                 .HasColumnName("status")
+                 .HasConversion<string>() // lưu string theo enum
+                 .HasMaxLength(20)
+                 .IsRequired();
+
+                e.Property(x => x.VehicleNumber).HasColumnName("vehicle_number").HasMaxLength(64);
+                e.Property(x => x.VehicleName).HasColumnName("vehicle_name").HasMaxLength(255);
+                e.Property(x => x.VehicleModel).HasColumnName("vehicle_model").HasMaxLength(100);
+                e.Property(x => x.VehicleVersion).HasColumnName("vehicle_version").HasMaxLength(100);
+                e.Property(x => x.Rate).HasColumnName("rate").HasColumnType("decimal(12,2)");
+                e.Property(x => x.Warranty).HasColumnName("warranty").HasMaxLength(255);
+                e.Property(x => x.BodyNumber).HasColumnName("body_number").HasMaxLength(64);
+                e.Property(x => x.EngineNumber).HasColumnName("engine_number").HasMaxLength(64);
+
+                e.Property(x => x.CustomerAddress).HasColumnName("customer_address").HasMaxLength(500);
+                e.Property(x => x.CustomerPhone).HasColumnName("customer_phone").HasMaxLength(32);
+                e.Property(x => x.CustomerAddressProof).HasColumnName("customer_address_proof").HasMaxLength(255);
+
+                e.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp").ValueGeneratedOnAddOrUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                e.HasIndex(x => x.PolicyNumber).IsUnique().HasDatabaseName("uk_policies_no");
+                e.HasIndex(x => x.CustomerId).HasDatabaseName("idx_policies_customer");
+                e.HasIndex(x => x.VehicleId).HasDatabaseName("idx_policies_vehicle");
+                e.HasIndex(x => x.Status).HasDatabaseName("idx_policies_status");
+
+                e.HasOne<VehicleInsurance.Domain.Customers.Customer>()
+                 .WithMany()
+                 .HasForeignKey(x => x.CustomerId)
+                 .HasConstraintName("fk_policies_customer")
+                 .OnDelete(DeleteBehavior.Restrict);
+
+                e.HasOne<VehicleInsurance.Domain.Entity.Vehicle>()
+                 .WithMany()
+                 .HasForeignKey(x => x.VehicleId)
+                 .HasConstraintName("fk_policies_vehicle")
+                 .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ===== BILLINGS
+            b.Entity<Billing>(e =>
+            {
+                e.ToTable("billings");
+                e.HasKey(x => x.Id);
+
+                e.Property(x => x.Id).HasColumnName("id").ValueGeneratedOnAdd();
+                e.Property(x => x.BillNo).HasColumnName("bill_no").IsRequired().HasMaxLength(32);
+                e.Property(x => x.PolicyId).HasColumnName("policy_id").IsRequired();
+                e.Property(x => x.CustomerId).HasColumnName("customer_id").IsRequired();
+                e.Property(x => x.VehicleId).HasColumnName("vehicle_id");
+                e.Property(x => x.Amount).HasColumnName("amount").HasColumnType("decimal(12,2)").IsRequired();
+                e.Property(x => x.BillDate).HasColumnName("bill_date").IsRequired();
+                e.Property(x => x.PaymentMethod).HasColumnName("payment_method").HasMaxLength(50);
+                e.Property(x => x.PaymentRef).HasColumnName("payment_ref").HasMaxLength(100);
+                e.Property(x => x.CreatedAt).HasColumnName("created_at").HasColumnType("timestamp").ValueGeneratedOnAdd().HasDefaultValueSql("CURRENT_TIMESTAMP");
+                e.Property(x => x.UpdatedAt).HasColumnName("updated_at").HasColumnType("timestamp").ValueGeneratedOnAddOrUpdate().HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                e.HasIndex(x => x.BillNo).IsUnique().HasDatabaseName("uk_billings_no");
+                e.HasIndex(x => x.PolicyId).HasDatabaseName("idx_billings_policy");
+                e.HasIndex(x => x.CustomerId).HasDatabaseName("idx_billings_customer");
+                e.HasIndex(x => x.VehicleId).HasDatabaseName("idx_billings_vehicle");
+
+                e.HasOne<VehicleInsurance.Domain.Policies.Policy>()
+                 .WithMany()
+                 .HasForeignKey(x => x.PolicyId)
+                 .HasConstraintName("fk_billings_policy")
+                 .OnDelete(DeleteBehavior.Restrict);
+            });
+
 
 
 
