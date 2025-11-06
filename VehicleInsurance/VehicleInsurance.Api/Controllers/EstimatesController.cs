@@ -41,12 +41,17 @@ namespace VehicleInsurance.Api.Controllers
         }
 
         // POST /estimates
+
+        [Authorize(Roles = "ADMIN")]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] EstimateCreateRequest req, CancellationToken ct)
+        public async Task<IActionResult> CreateAdminEstimate([FromBody] EstimateCreateRequest req, CancellationToken ct)
         {
+            req.CreatedByAdmin = true;
+
             var dto = await _service.CreateAsync(req, ct);
             return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
         }
+
 
         // PATCH /estimates/123
         [HttpPatch("{id:long}")]

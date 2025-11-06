@@ -5,13 +5,14 @@ namespace VehicleInsurance.Application.Estimates.Dtos
     {
         public long Id { get; set; }
         public string EstimateNumber { get; set; } = default!;
-        public long? VehicleId { get; set; }
-
-        // Điểm nhấn gợi ý (tuỳ bạn chọn hiển thị)
         public string? VehicleName { get; set; }
+            public long? VehicleId { get; set; }           // ✅ để cập nhật xe
+
         public string? VehicleModel { get; set; }
-        public string? PolicyType { get; set; }
         public decimal? Rate { get; set; }
+        public string? PolicyType { get; set; }
+        public string Status { get; set; } = "PENDING"; // ✅ thêm
+        public bool IsPublic { get; set; }              // ✅ thêm
         public DateTime CreatedAt { get; set; }
     }
 }

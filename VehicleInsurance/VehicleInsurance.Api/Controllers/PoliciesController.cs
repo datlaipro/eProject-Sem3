@@ -5,6 +5,7 @@ using VehicleInsurance.Application.Policies.Services;
 
 namespace VehicleInsurance.Api.Controllers
 {
+    
     [ApiController]
     [Route("api/policies")]
     [Authorize(Roles = "ADMIN,EMPLOYEE,CUSTOMER")]
